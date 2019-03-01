@@ -9,10 +9,14 @@ class Maker(models.Model):
     )
 
 class Product(models.Model):
-    qr = models.CharField(
-        verbose_name = 'QRコード',
-        max_length = 100,
-        unique = True
+    jan = models.CharField(
+        verbose_name = 'jan',
+        max_length = 13,
+    )
+
+    version = models.CharField(
+        verbose_name = "バージョン",
+        max_length = 10,
     )
 
     name = models.CharField(
@@ -36,6 +40,11 @@ class Product(models.Model):
     qr_at_width = models.FloatField(
         verbose_name = 'QR位置(横)'
     )
+    
+    info = models.CharField(
+        verbose_name = "付加情報",
+        max_length = 255
+    )
 
 class Recipe(models.Model):
     product = models.ForeignKey(
@@ -43,10 +52,7 @@ class Recipe(models.Model):
         verbose_name = '商品',
         on_delete = models.CASCADE
     )
-    version = models.IntegerField(
-        verbose_name = 'バージョン',
-        default = 1
-    )
+
 class RecipeQuery(models.Model):
 
     image = models.ImageField(
@@ -58,5 +64,29 @@ class RecipeQuery(models.Model):
         max_length = 255,
     )
 
+class Oven(models.Model):
+    maker_name = models.CharField(
+        verbose_name = "メーカ",
+        max_length = 100,
+    )
+    model_name = models.CharField(
+        verbose_name = "機種名",
+        max_length = 100,
+    )
+    floor_width_in_cm = models.IntegerField(
+        verbose_name = "底面幅",
+    )
+
+    floor_height_in_cm = models.IntegerField(
+        verbose_name = "底面高さ",
+    )
+
+    floor_height_in_cm = models.IntegerField(
+        verbose_name = "底面高さ",
+    )
+    channel_info = models.CharField(
+        verbose_name = "チャネル情報",
+        max_length = 255,
+    )
 
 

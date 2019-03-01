@@ -6,13 +6,14 @@ import cv2
 
 def decode_code(image_path):
     try:
-        #img = cv2.imread(image_path)
-        # mask = cv2.inRange(img, (0,0,0), (200,200,200))
-        # thresholded = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-        # inverted = 255-thresholded
+        img = cv2.imread(image_path)
+        mask = cv2.inRange(img, (0,0,0), (60,60,60))
+        thresholded = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+        inverted = 255-thresholded
 
        
-        data = decode(Image.open(image_path))
+        data = decode(inverted)
+        
         print(data)
         # コード内容を出力
         return {'success': data[0][0].decode('utf-8', 'ignore')}

@@ -20,8 +20,8 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
         serializer = RecipeQuerySerializer(data = request.data)
         if serializer.is_valid():
             obj = serializer.save()
-            ret = qr_decoder.decode_code(obj.image.path)
+            ret = qr_decoder.decode_qrcode(obj.image.path, obj.oven)
             return Response(status=200, data=ret)
-
         else:
+            print(str(serializer.errors))
             return Response(status=500, data={'error': True})

@@ -140,11 +140,11 @@ class Oven(models.Model):
         verbose_name = "機種名",
         max_length = 100,
     )
-    floor_width_in_cm = models.IntegerField(
+    floor_width_in_mm = models.IntegerField(
         verbose_name = "底面幅",
     )
 
-    floor_height_in_cm = models.IntegerField(
+    floor_height_in_mm = models.IntegerField(
         verbose_name = "底面高さ",
     )
 

@@ -14,7 +14,7 @@ class MyRecipeAdmin(admin.ModelAdmin):
     list_display = ('product', 'recipe')
     
 class MyOvenAdmin(admin.ModelAdmin):
-    list_display = ('code', 'maker_name', 'model_name', 'floor_width_in_cm', 'floor_height_in_cm')
+    list_display = ('code', 'maker_name', 'model_name', 'floor_width_in_mm', 'floor_height_in_mm')
 
 class MyRecipeQueryAdmin(admin.ModelAdmin):
     list_display = ('image', 'oven', 'received_at')

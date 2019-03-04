@@ -40,8 +40,8 @@ def decode_qrcode(image_path, oven):
         return {'error': 'QRコードが見つかりませんでした'}
 
     height_in_pix, width_in_pix, color_channels = img.shape
-    pix_per_cm_x = width_in_pix / oven.floor_width_in_cm
-    pix_per_cm_y = height_in_pix / oven.floor_height_in_cm
+    pix_per_mm_x = width_in_pix / oven.floor_width_in_mm
+    pix_per_mm_y = height_in_pix / oven.floor_height_in_mm
 
     channels = json.loads(oven.channel_info)
     print(channels)
@@ -53,7 +53,7 @@ def decode_qrcode(image_path, oven):
             allIn = True
             partialIn = False
             for point in barcode.polygon:
-                if find_point(ch["x_offset"]*pix_per_cm_x, ch["y_offset"]*pix_per_cm_y, ch["x_offset"]*pix_per_cm_x + ch["width"]*pix_per_cm_x, ch["y_offset"]*pix_per_cm_y + ch["height"]*pix_per_cm_y, point.x, point.y):
+                if find_point(ch["x_offset"]*pix_per_mm_x, ch["y_offset"]*pix_per_mm_y, ch["x_offset"]*pix_per_mm_x + ch["width"]*pix_per_mm_x, ch["y_offset"]*pix_per_mm_y + ch["height"]*pix_per_mm_y, point.x, point.y):
                     partialIn = True
                 else:
                     allIn = False

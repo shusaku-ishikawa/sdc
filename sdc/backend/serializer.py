@@ -9,19 +9,9 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = ('qr', 'name', 'height', 'width', 'qr_at_height', 'qr_at_width')
 
-
-class RecipeQuerySerializer(serializers.Serializer):
+class RecipeQuerySerializer(serializers.ModelSerializer):
     image = Base64ImageField()
-    ovenId = serializers.CharField(max_length = 255)
-
-    def create(self, validated_data):
-        image = validated_data.pop('image')
-        oven = Oven.objects.get(code = validated_data.pop('ovenId'))
-        return RecipeQuery.objects.create(image = image,oven = oven)
-
-    def validate_oven_code(self, oven_code):
-        
-        oven = Oven.objects.get(code = oven_code)
-            
-        return oven_code
-        
+    oven = serializers.SlugRelatedField(queryset=Oven.objects.all(), slug_field='code')
+    class Meta:
+        model = RecipeQuery
+        fields = ['image', 'oven',]

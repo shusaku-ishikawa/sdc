@@ -1,16 +1,16 @@
 from pyzbar.pyzbar import decode
 from PIL import Image
 import cv2
-# import matplotlib.pyplot as plt
-# import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import numpy as np
 import sys
-# import scipy.misc
+import scipy.misc
 import numpy
 import json
 
 # 画像ファイルの指定
-def FindPoint(x1, y1, x2,  
+def find_point(x1, y1, x2,  
               y2, x, y) : 
     if (x > x1 and x < x2 and 
         y > y1 and y < y2) : 
@@ -27,10 +27,10 @@ def decode_qrcode(image_path, oven):
 
     # # Create figure and axes
     #
-    #scipy.misc.imsave(image_path + '_inverted.jpg', inverted)
+    scipy.misc.imsave(image_path + '_inverted.jpg', inverted)
     barcodes = decode(inverted)
     
-    # fig,ax = plt.subplots(1)
+    fig,ax = plt.subplots(1)
     # Display the image
     ax.imshow(Image.open(image_path + '_inverted.jpg'))
 
@@ -43,8 +43,8 @@ def decode_qrcode(image_path, oven):
     pix_per_cm_x = width_in_pix / oven.floor_width_in_cm
     pix_per_cm_y = height_in_pix / oven.floor_height_in_cm
 
-    channels = json.loads(oven.channels_info)
-
+    channels = json.loads(oven.channel_info)
+    print(channels)
     result = []
     for ch in channels:
         temp = {'id': ch['id']}
@@ -53,7 +53,7 @@ def decode_qrcode(image_path, oven):
             allIn = True
             partialIn = False
             for point in barcode.polygon:
-                if FindPoint(ch["x_offset"]*pix_per_cm_x, ch["y_offset"]*pix_per_cm_y, ch["x_offset"]*pix_per_cm_x + ch["width"]*pix_per_cm_x, ch["y_offset"]*pix_per_cm_y + ch["height"]*pix_per_cm_y, point.x, point.y):
+                if find_point(ch["x_offset"]*pix_per_cm_x, ch["y_offset"]*pix_per_cm_y, ch["x_offset"]*pix_per_cm_x + ch["width"]*pix_per_cm_x, ch["y_offset"]*pix_per_cm_y + ch["height"]*pix_per_cm_y, point.x, point.y):
                     partialIn = True
                 else:
                     allIn = False

@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class MyProductAdmin(admin.ModelAdmin):
-    list_display = ('jan', 'version', 'name', 'height', 'width', 'qr_at_height', 'qr_at_width', 'info')
+    list_display = ('qr', 'name', 'height', 'width', 'qr_at_height', 'qr_at_width', 'info')
 
 class MyRecipeAdmin(admin.ModelAdmin):
     list_display = ('product', 'recipe')

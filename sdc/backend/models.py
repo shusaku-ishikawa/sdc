@@ -24,14 +24,10 @@ class Product(models.Model):
     def __str__(self):
         return str(self.name)
 
-    jan = models.CharField(
-        verbose_name = 'jan',
-        max_length = 13,
-    )
-
-    version = models.CharField(
-        verbose_name = "バージョン",
-        max_length = 10,
+    qr = models.CharField(
+        verbose_name = 'qr',
+        max_length = 255,
+        unique = True
     )
 
     name = models.CharField(
@@ -39,6 +35,41 @@ class Product(models.Model):
         max_length = 100,
         null = False,
         blank = False
+    )
+    
+    manufacturer = models.CharField(
+        verbose_name = '製造元',
+        max_length = 255,
+        null = True,
+        blank = True,
+    )
+
+    seller = models.CharField(
+        verbose_name = '販売元',
+        max_length = 255,
+        null = True,
+        blank = True,
+    )
+    ingredients = models.CharField(
+        verbose_name = '原材料',
+        max_length = 255,
+        null = True,
+        blank = True,
+    )
+    allergens = models.CharField(
+        verbose_name = 'アレルゲン',
+        max_length = 255,
+        null = True,
+        blank = True,
+    )
+    calory = models.FloatField(
+        verbose_name = 'カロリー',
+        null = True,
+        blank = True,
+    )
+    other_info = models.CharField(
+        verbose_name = "付加情報",
+        max_length = 255
     )
     
     height = models.FloatField(

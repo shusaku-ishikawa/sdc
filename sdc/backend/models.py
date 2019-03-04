@@ -158,9 +158,6 @@ class RecipeQuery(models.Model):
         verbose_name = 'レシピ検索履歴'
         verbose_name_plural = 'レシピ検索履歴'
 
-    def __str__(self):
-        return str(self.model_name)
-
     image = models.ImageField(
         verbose_name = '画像',
         upload_to = 'from_microwaves/'
@@ -175,5 +172,3 @@ class RecipeQuery(models.Model):
         use_numeric = True,  
         auto_now_add = True,
     )
-
-

@@ -28,10 +28,14 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
             data = {
                 'requestId': str(obj.pk)
             }
-
+            print(channels_with_qr)
             for channel in channels_with_qr:
                 if 'qr' in channel.keys():
-                    p = Product.objects.get(qr = channel['qr'].decode('utf-8'))
+                    print(channel['qr'])
+                    try:
+                        p = Product.objects.get(qr = channel['qr'].decode('utf-8'))
+                    except Product.DoesNotExist:
+                        return Response(status=200, data={'status': 'error', 'code': 200})
                     recipes = Recipe.objects.filter(product = p)
 
                     dict_product = {
@@ -63,4 +67,4 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
             return Response(status=200, data=response)
         else:
             print(str(serializer.errors))
-            return Response(status=500, data={'error': True})
+            return Response(status=200, data={'status': 'error', 'code': 200})

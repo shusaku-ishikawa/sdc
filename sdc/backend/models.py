@@ -67,31 +67,27 @@ class Product(models.Model):
         null = True,
         blank = True,
     )
+
+    
+    height_in_mm = models.FloatField(
+        verbose_name = '高さ(mm)'
+    )
+
+    width_in_mm = models.FloatField(
+        verbose_name = '幅(mm)'
+    )
+
+    qr_x_offset_in_mm = models.FloatField(
+        verbose_name = 'QR位置-x(mm)'
+    )
+    qr_y_offset_in_mm = models.FloatField(
+        verbose_name = 'QR位置-y(mm)'
+    )
+    
     other_info = models.CharField(
         verbose_name = "付加情報",
         max_length = 255
     )
-    
-    height = models.FloatField(
-        verbose_name = 'サイズ(高さ)'
-    )
-
-    width = models.FloatField(
-        verbose_name = 'サイズ(幅)'
-    )
-
-    qr_at_height = models.FloatField(
-        verbose_name = 'QR位置(縦)'
-    )
-    qr_at_width = models.FloatField(
-        verbose_name = 'QR位置(横)'
-    )
-    
-    info = models.CharField(
-        verbose_name = "付加情報",
-        max_length = 255
-    )
-
 class Recipe(models.Model):
     class Meta:
         verbose_name = 'レシピ'
@@ -114,6 +110,7 @@ class Recipe(models.Model):
         verbose_name = 'レシピ',
         max_length = 255
     )
+
 
 
 class Oven(models.Model):
@@ -148,10 +145,36 @@ class Oven(models.Model):
         verbose_name = "底面高さ",
     )
 
-    channel_info = models.CharField(
-        verbose_name = "チャネル情報",
-        max_length = 255,
+
+class OvenChannel(models.Model):
+    class Meta:
+        verbose_name = 'チャネル'
+        verbose_name_plural = 'チャネル'
+    def __str__(self):
+        return ''
+    
+    oven = models.ForeignKey(
+        to = Oven,
+        verbose_name = 'レンジ',
+        on_delete = models.CASCADE,
+        related_name = 'channels'
     )
+    seq = models.IntegerField(
+        verbose_name = 'チャネル番号'
+    )
+    x_offset_in_mm = models.FloatField(
+        verbose_name = '水平方向オフセット(mm)',
+    )
+    y_offset_in_mm = models.FloatField(
+        verbose_name = '垂直方向オフセット(mm)',
+    )
+    width_in_mm = models.FloatField(
+        verbose_name = '幅(mm)'
+    )
+    height_in_mm = models.FloatField(
+        verbose_name = '高さ(mm)'
+    )
+    
 
 class RecipeQuery(models.Model):
     class Meta:
@@ -171,4 +194,55 @@ class RecipeQuery(models.Model):
         verbose_name = _('問い合わせ日時'), 
         use_numeric = True,  
         auto_now_add = True,
+    )
+
+class History(models.Model):
+    class Meta:
+        verbose_name = '調理履歴'
+        verbose_name_plural = '調理履歴'
+    
+    cooked_at =  UnixTimeStampField(
+        verbose_name = _('調理完了日時'), 
+        use_numeric = True,  
+    )
+    corresponding_query = models.ForeignKey(
+        RecipeQuery,
+        verbose_name = '問い合わせ',
+        on_delete  = models.CASCADE
+    )
+    power_consumed = models.FloatField(
+        verbose_name = '消費電力'
+    )
+    other_info = models.TextField(
+        verbose_name = '付加情報',
+        blank = True,
+        null = True
+    )   
+class HistoryByChannel(models.Model):
+    class Meta:
+        verbose_name = 'チャネル毎調理履歴'
+        verbose_name_plural = 'チャネル毎調理履歴'
+    
+    history = models.ForeignKey(
+        History,
+        verbose_name = '調理履歴',
+        on_delete = models.CASCADE
+    )
+    channel = models.IntegerField(
+        verbose_name= 'チャネル',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        verbose_name = '利用レシピ',
+        on_delete = models.CASCADE
+    )
+    surf_temp_before = models.FloatField(
+        verbose_name = '開始表面温度'
+    )
+    
+    surf_temp_after = models.FloatField(
+        verbose_name = '終了表面温度'
+    )
+    seconds_taken = models.IntegerField(
+        verbose_name = '調理時間'
     )

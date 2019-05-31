@@ -37,9 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'backend',
+    'core',
+    'backend_v1',
+    'backend_v2',
     'rest_framework'
 ]
+
+
+AUTH_USER_MODEL = 'auth.User'
+LOGIN_URL = 'core:login'
+LOGIN_REDIRECT_URL = 'core:top'
+LOGOUT_REDIRECT_URL = 'core:login'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -121,7 +130,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR,'uploaded_files')
-MEDIA_URL = '/backend/'
+MEDIA_URL = '/media/'
 
 INVERT_IMAGE_WHEN_DECODE = False
 

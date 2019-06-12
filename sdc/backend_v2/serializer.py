@@ -7,7 +7,12 @@ from django.core.exceptions import ObjectDoesNotExist
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ('qr', 'name', 'height', 'width', 'qr_y_offset_in_mm', 'qr_x_offset_in_mm')
+        fields = ('name', 'manufacturer', 'seller', 'ingredients', 'allergens', 'calory', 'otherInfo')
+class RecipeSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'recipe')
 
 class RecipeQuerySerializer(serializers.ModelSerializer):
     image = Base64ImageField()
@@ -31,7 +36,6 @@ class HistorySerializer(serializers.ModelSerializer):
     requestId = serializers.SlugRelatedField(source = 'corresponding_query', queryset=RecipeQuery.objects.all(), slug_field='pk')
     channels = HistoryByChannelSerializer(many = True, write_only = True)
     powerConsumed = serializers.FloatField(source = 'power_consumed')
-    otherInfo = serializers.CharField(source = 'other_info', allow_blank = True)
     class Meta:
         model = History
         fields = ['unixtimestamp', 'requestId','channels', 'powerConsumed', 'otherInfo']

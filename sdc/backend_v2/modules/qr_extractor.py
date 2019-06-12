@@ -32,9 +32,7 @@ class MathHelper:
     @staticmethod
     def get_angle(p1, p2):
         x_diff = p2[0] - p1[0]
-        print('x_diff = ' + str(x_diff))
         y_diff = p2[1] - p1[1]
-        print('y_diff = ' + str(y_diff))
         return math.degrees(math.atan2(y_diff, x_diff))
 
     @staticmethod
@@ -83,17 +81,20 @@ class MathHelper:
 
     @staticmethod
     def rotate(origin, point, angle):
-        """
-        Rotate a point counterclockwise by a given angle around a given origin.
-
-        The angle should be given in radians.
-        """
+        #angle = angle % 180
+         
         ox, oy = origin
         px, py = point
+        offset_x = px - ox
+        offset_y = py - oy
+        rad = math.radians(angle)
+        
+        offset_x_rotated = int(math.cos(rad) * offset_x + math.sin(rad) * -offset_y)
+        offset_y_rotated = int(-math.sin(rad) * offset_x + math.cos(rad) * -offset_y)
+        xx = offset_x_rotated + ox
+        yy = - offset_y_rotated + oy
 
-        qx = int(ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy))
-        qy = int(oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy))
-        return qx, qy
+        return xx, yy
 
 class QRExtractor:    
     BLUR_VALUE = 3
@@ -128,8 +129,9 @@ class QRExtractor:
         x, y : 商品の中心
     """
     def _get_product_center(self, angle, offset_x, offset_y, code_x, code_y):
-        
+       
         x, y = MathHelper.rotate((code_x, code_y), (code_x - offset_x, code_y - offset_y), angle)
+        #x, y = MathHelper.rotate((code_x, code_y), (-offset_x, offset_y), angle)
         cv2.drawMarker(self.draw, (x, y), 1, markerType=cv2.MARKER_CROSS, markerSize=40, thickness=5, line_type=cv2.LINE_8)
         
         return x, y
@@ -142,6 +144,8 @@ class QRExtractor:
         width : 幅
         height : 高さ
         angle : 傾き(度)
+    return:
+        頂点タプル
     """
     def _draw_angled_rec(self, x0, y0, width, height, angle):
         _angle = angle * math.pi / 180.0
@@ -189,12 +193,15 @@ class QRExtractor:
     """
     商品の枠を書きます
     input:
-        x_offsett : その商品の中心位置からのQR位置(x方向へのずれ)
-        y_offset : その商品の中心位置からのQR位置(ｙ方向へのずれ)
+        None
     return:
-        3d-list : 商品の頂点の配列
+        barcodes : バーコード
+        products : 商品の頂点
     """
     def find_products(self):
+        product_shape_list = []
+        barcode_list = []
+
         for i in range(len(self.codes)):
             south = self.south_corners[i]
             east = self.east_corners[i]
@@ -203,7 +210,6 @@ class QRExtractor:
 
             barcodes = pyzbar.decode(code)
 
-            products = []
             for barcode in barcodes:
                 if barcode.type == 'QRCODE':
                     barcode_data = barcode.data.decode('utf-8')
@@ -213,16 +219,20 @@ class QRExtractor:
                     south_center = MathHelper.get_center(south)
                     east_center = MathHelper.get_center(east)
                     code_center = MathHelper.get_center(code)
-                    print(code_center)
+                    
                     angle = MathHelper.get_angle(main_center, east_center)
-
-                    p = Product.objects.get(qr = barcode_data)
+                    try:
+                        p = Product.objects.get(qr = barcode_data)
+                    except:
+                        print('サーバに登録されていないコードは無視されます → ' + barcode_data)
+                        continue
 
                     px, py = self._get_product_center(angle, p.qr_x_offset_in_mm * self.px_per_mm_x, p.qr_y_offset_in_mm * self.px_per_mm_y, main_center[0], main_center[1])
-                    
                     coords = self._draw_angled_rec(px, py, p.width_in_mm * self.px_per_mm_x, p.height_in_mm * self.px_per_mm_y, angle)
-                    products.append(list(coords))
-        return barcodes, products 
+                    product_shape_list.append(list(coords))
+                    barcode_list.append(barcode_data)
+
+        return barcode_list, product_shape_list 
 
     """
     QRの3か所のマーカの場所を表示する
@@ -232,6 +242,7 @@ class QRExtractor:
         Boolean : if a barcode is detected or not.
     """
     def draw_three_square(self):
+        qr_detected = False
         for i in range(len(self.codes)):
             south = self.south_corners[i]
             east = self.east_corners[i]
@@ -241,7 +252,7 @@ class QRExtractor:
             barcodes = pyzbar.decode(code)
 
             for barcode in barcodes:
-                print('code:' + str(i) + '::' + str(barcode.data.decode('utf-8')))
+                qr_detected = True
 
                 # east
                 pts = east.reshape((-1,1,2))
@@ -254,7 +265,10 @@ class QRExtractor:
                 # main
                 pts = main.reshape((-1,1,2))
                 canvas = cv2.polylines(canvas, [main], True, (0,255,255), self.LINE_WEIGHT)
-        self.draw = canvas
+        
+        if qr_detected:
+            self.draw = canvas
+        return qr_detected
     
     """
     QRの3か所のマーカの場所を表示する
@@ -336,9 +350,6 @@ class QRExtractor:
                 if max(closest_a, closest_b) < cv2.arcLength(square, True) * 2.5 and math.fabs(closest_a - closest_b) / max(closest_a, closest_b) <= self.DISTANCE_TOLERANCE:
                     # Determine placement of other indicators (even if code is rotated)
                     angle_a = MathHelper.get_angle(MathHelper.get_center(distances_to_contours[closest_a]), center)
-                    #angle_a = _get_angle(center, _get_center(distances_to_contours[closest_a]))
-                    
-                    #angle_b = _get_angle(center, _get_center(distances_to_contours[closest_b])) 
                     angle_b = MathHelper.get_angle(MathHelper.get_center(distances_to_contours[closest_b]), center) 
     
                     if angle_a < angle_b or (angle_b < -90 and angle_a > 0):

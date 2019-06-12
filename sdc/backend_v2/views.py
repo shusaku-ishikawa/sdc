@@ -8,7 +8,7 @@ from rest_framework.decorators import action
 from .modules.qr_extractor import *
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
-from django.http import *
+
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -29,6 +29,8 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
     def create(self, request):
         # POST   :  /api/recipes/
         serializer = RecipeQuerySerializer(data = request.data)
+        
+        # パラメータチェック
         if serializer.is_valid():
             obj = serializer.save()
             cv2_image = cv2.imread(obj.image.path)
@@ -47,8 +49,11 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
             
             # 商品を検知
             barcodes, coodinates = extractor.find_products()
-            
-            channels = OvenChannelSerializer(data = obj.oven.channels.all(), many = True)
+            # QR解析失敗時
+            if len(barcodes) == 0:
+                return Response(status = 200, data = {'status': 'error', 'data': RecipeQueryErrorCode.QR_NOT_FOUND})
+
+            #channels = OvenChannelSerializer(data = obj.oven.channels.all(), many = True)
             
             response = {
                 'status': 'success',
@@ -57,52 +62,59 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
                 'requestId': str(obj.pk)
             }
             channel_for_response_list = []
+
             for channel in obj.oven.channels.all():
                 
                 channel_for_response = {
                     'id': channel.seq
                 } 
-                channel_coord = extractor.draw_channel(channel)
-                for barcode in barcodes:
-                    if Polygon(coodinates[0]).intersection(Polygon(channel_coord)).area > 0:
-                        if 'product_found' in channel_for_response:
-                            print('単一チャネルに複数商品が含まれています')
-                            return
-                        else:
-                            channel_for_response['product_found'] = barcode.data.decode('utf-8')
-                
-                        try:
-                            p = Product.objects.get(qr = channel_for_response['product_found'])
-                        except ObjectDoesNotExist:
-                            return Response(status=200, data={'status': 'error', 'data': RecipeQueryErrorCode.INTERNAL_ERROR})
-                        
-                        recipes = Recipe.objects.filter(product = p)
-                        dict_product = {
-                            'name': p.name,
-                            'manufacturer': p.manufacturer,
-                            'seller': p.seller,
-                            'ingredients': p.ingredients,
-                            'allergens': p.allergens,
-                            'calory': p.calory,
-                            'otherInfo': p.other_info
-                        }
-                        dict_list_recipe = []
-                        for r in recipes:
-                            dic = {
-                                'id': str(r.pk),
-                                'name': r.name,
-                                'recipe': r.recipe
-                            }
-                            dict_list_recipe.append(dic)
-                        
-                        channel_for_response['hasQr'] = True
-                        channel_for_response['product'] = dict_product
-                        channel_for_response['recipes'] = dict_list_recipe
-                        channel_for_response_list.append(channel_for_response)
 
+                channel_coord = extractor.draw_channel(channel)
+                shapes = []
+                for x, y in channel_coord:
+                    shapes.append({ 'x': x, 'y': y })
+                channel_for_response['shape'] = shapes
+
+                
+                for qr_data in barcodes:
+                    
+                    # 一定面積被っている場合
+                    if Polygon(coodinates[0]).intersection(Polygon(channel_coord)).area > settings.MIN_AREA_TO_RECONGNIZE:
+                        # 既に別の商品がそのチャネルに存在する場合
+                        if 'product_found' in channel_for_response and channel_for_response['product_found'] != qr_data:
+                            return Response(status = 200, data = {'status': 'error', 'data': RecipeQueryErrorCode.MULTIPLE_PRODUCTS_IN_CHANNEL})
+                        else:
+                            # その商品がサーバで登録されている場合
+                            try:
+                                channel_for_response['product_found'] = qr_data
+                                p = Product.objects.get(qr = channel_for_response['product_found'])
+                                
+                            except ObjectDoesNotExist:
+                                continue
+
+                        recipes = Recipe.objects.filter(product = p)
+                      
+                        serialized_product = ProductSerializer(p, many = False).data
+                        serialized_recipes = RecipeSerializer(recipes, many = True).data
+
+
+                        channel_for_response['product'] = serialized_product
+                        channel_for_response['recipes'] = serialized_recipes
+                        
+                channel_for_response_list.append(channel_for_response)
+
+            product_for_response_list = []
+            for product_coords in coodinates:
+                p = []
+                for x, y in product_coords:
+                    p.append({ 'x':x, 'y': y })
+                product_for_response_list.append({'shape': p})
+            
             data['channels'] = channel_for_response_list
+            data['products'] = product_for_response_list
+
             response['data'] = data
-            cv2.imwrite('output.png', extractor.draw)
+            cv2.imwrite(obj.image.path + '_processed.png', extractor.draw)
           
 
             return Response(status=200, data=response)
@@ -124,4 +136,4 @@ class HistoryViewSet(viewsets.ModelViewSet):
             return Response(status = 200, data={'status': 'success'})
         else:
             print(str(serializer.errors))
-            return Response(status = 200, data={'status': 'error', 'data': MyDecoder.INVALID_PARAMETERS})
+            return Response(status = 200, data={'status': 'error', 'data': RecipeQueryErrorCode.INVALID_PARAMETERS})

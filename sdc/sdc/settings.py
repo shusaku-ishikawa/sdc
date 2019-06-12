@@ -133,5 +133,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'uploaded_files')
 MEDIA_URL = '/media/'
 
 INVERT_IMAGE_WHEN_DECODE = False
-
+MIN_AREA_TO_RECONGNIZE = 4000 #px
 

@@ -18,3 +18,12 @@ class UploadedFileForm(forms.ModelForm):
         model = UploadedFile
         fields = ('file',)
 
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+class RecipeForm(forms.ModelForm):
+    class Meta:
+        model = Recipe
+        fields = '__all__'

@@ -25,9 +25,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    # blog.urlsをincludeする
     url(r'sdc/core/', include('core.urls')),
     url(r'^sdc/v1/api/', include(v1_router.urls)),
-    url(r'^sdc/v2/api/', include(v2_router.urls)),
+    url(r'^sdc/api/', include(v2_router.urls)),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 

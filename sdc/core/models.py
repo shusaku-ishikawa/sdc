@@ -18,8 +18,8 @@ class Maker(models.Model):
 
 class UploadedFile(models.Model):
     class Meta:
-        verbose_name = 'アップロードファイル'
-        verbose_name_plural = 'アップロードファイル'
+        verbose_name = '5.食品/レシピ一括登録'
+        verbose_name_plural = '5.食品/レシピ一括登録'
 
     file = models.FileField(
         verbose_name = 'ファイル',
@@ -35,8 +35,8 @@ class UploadedFile(models.Model):
     )
 class UploadedErrorRecord(models.Model):
     class Meta:
-        verbose_name = 'アップロードエラー'
-        verbose_name_plural = 'アップロードエラー'
+        verbose_name = '6.食品/レシピ一括登録エラー'
+        verbose_name_plural = '6.食品/レシピ一括登録エラー'
     file = models.ForeignKey(
         verbose_name = 'ファイル',
         to = UploadedFile,
@@ -50,8 +50,8 @@ class UploadedErrorRecord(models.Model):
 
 class Product(models.Model):
     class Meta:
-        verbose_name = '食品'
-        verbose_name_plural = '食品'
+        verbose_name = '3.食品'
+        verbose_name_plural = '3.食品'
 
     def __str__(self):
         return str(self.name)
@@ -116,7 +116,7 @@ class Product(models.Model):
         verbose_name = 'QR位置-y(mm)'
     )
     
-    other_info = models.CharField(
+    otherInfo = models.CharField(
         verbose_name = "付加情報",
         max_length = 255,
         blank = True,
@@ -124,8 +124,8 @@ class Product(models.Model):
     )
 class Recipe(models.Model):
     class Meta:
-        verbose_name = 'レシピ'
-        verbose_name_plural = 'レシピ'
+        verbose_name = '4.レシピ'
+        verbose_name_plural = '4.レシピ'
 
     def __str__(self):
         return str(self.name)
@@ -149,8 +149,8 @@ class Recipe(models.Model):
 
 class Oven(models.Model):
     class Meta:
-        verbose_name = '電子レンジ機種'
-        verbose_name_plural = '電子レンジ機種'
+        verbose_name = '1.電子レンジ機種'
+        verbose_name_plural = '1.電子レンジ機種'
 
     def __str__(self):
         return str(self.model_name)
@@ -172,18 +172,18 @@ class Oven(models.Model):
         max_length = 100,
     )
     floor_width_in_mm = models.IntegerField(
-        verbose_name = "底面幅",
+        verbose_name = "底面幅(mm)",
     )
 
     floor_height_in_mm = models.IntegerField(
-        verbose_name = "底面高さ",
+        verbose_name = "底面高さ(mm)",
     )
 
 
 class OvenChannel(models.Model):
     class Meta:
-        verbose_name = 'チャネル'
-        verbose_name_plural = 'チャネル'
+        verbose_name = '2.チャネル'
+        verbose_name_plural = '2.チャネル'
     def __str__(self):
         return ''
     
@@ -247,7 +247,7 @@ class History(models.Model):
     power_consumed = models.FloatField(
         verbose_name = '消費電力'
     )
-    other_info = models.TextField(
+    otherInfo = models.TextField(
         verbose_name = '付加情報',
         blank = True,
         null = True

@@ -49,6 +49,7 @@ class MyDecoder:
         self.image_path = processed_img_path
         return processed_img_path
 
+
     def decode(self, doesInvert):
         if doesInvert:
             self._preprocess()
@@ -75,22 +76,24 @@ class MyDecoder:
         pix_per_mm_x = width_in_pix / oven.floor_width_in_mm
         pix_per_mm_y = height_in_pix / oven.floor_height_in_mm
 
-        channels = json.loads(self.oven.channel_info)
+        #channels = json.loads(self.oven.channel_info)
+        channels = OvenChannel.objects.filter(oven = oven)
+
         result = []
         for ch in channels:
-            top_left = (ch["x_offset"]*pix_per_mm_x, ch['y_offset']*pix_per_mm_y)
-            bottom_right = ( ch["x_offset"]*pix_per_mm_x + ch["width"]*pix_per_mm_x, ch["y_offset"]*pix_per_mm_y + ch["height"]*pix_per_mm_y)
-            draw_rectangle((top_left, bottom_right), color = 'red', width = 10)
-            temp = {'id': ch['id']}
+            top_left = (ch.x_offset_in_mm * pix_per_mm_x, ch.y_offset_in_mm * pix_per_mm_y)
+            bottom_right = ( ch.x_offset_in_mm * pix_per_mm_x + ch.width_in_mm * pix_per_mm_x, ch.y_offset_in_mm * pix_per_mm_y + ch.height_in_mm * pix_per_mm_y)
+            draw_rectangle((top_left, bottom_right), color = 'red', width = 3)
+            temp = {'id': ch.seq }
             for barcode in barcodes:
                 
                 partialIn = False
                 for point in barcode.polygon:
-                    if find_point(ch["x_offset"]*pix_per_mm_x, ch["y_offset"]*pix_per_mm_y, ch["x_offset"]*pix_per_mm_x + ch["width"]*pix_per_mm_x, ch["y_offset"]*pix_per_mm_y + ch["height"]*pix_per_mm_y, point.x, point.y):
+                    if find_point(ch.x_offset_in_mm * pix_per_mm_x, ch.y_offset_in_mm * pix_per_mm_y, ch.x_offset_in_mm * pix_per_mm_x + ch.width_in_mm * pix_per_mm_x, ch.y_offset_in_mm * pix_per_mm_y + ch.height_in_mm * pix_per_mm_y, point.x, point.y):
                         partialIn = True
 
                 if partialIn:
-                    if 'qr' in temp.keys():
+                    if 'qr' in temp.keys() and temp['qr'] != barcode.data.decode('utf-8'):
                         return Errors.MULTIPLE_PRODUCTS_IN_CHANNEL
                     else:
                         temp['qr'] = barcode.data.decode('utf-8')

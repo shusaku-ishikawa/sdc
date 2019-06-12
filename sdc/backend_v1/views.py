@@ -53,7 +53,7 @@ class RecipeQueryViewSet(viewsets.ModelViewSet):
                         'ingredients': p.ingredients,
                         'allergens': p.allergens,
                         'calory': p.calory,
-                        'otherInfo': p.other_info
+                        'otherInfo': p.otherInfo
                     }
                     dict_list_recipe = []
                     for r in recipes:

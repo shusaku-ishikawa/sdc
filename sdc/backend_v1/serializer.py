@@ -31,7 +31,7 @@ class HistorySerializer(serializers.ModelSerializer):
     requestId = serializers.SlugRelatedField(source = 'corresponding_query', queryset=RecipeQuery.objects.all(), slug_field='pk')
     channels = HistoryByChannelSerializer(many = True, write_only = True)
     powerConsumed = serializers.FloatField(source = 'power_consumed')
-    otherInfo = serializers.CharField(source = 'other_info')
+    #otherInfo = serializers.CharField(source = 'other_info')
     class Meta:
         model = History
         fields = ['unixtimestamp', 'requestId','channels', 'powerConsumed', 'otherInfo']
